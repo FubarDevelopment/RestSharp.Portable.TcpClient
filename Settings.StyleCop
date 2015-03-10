@@ -1,0 +1,15 @@
+<StyleCopSettings Version="105">
+  <GlobalSettings>
+    <StringProperty Name="Culture">en-US</StringProperty>
+    <CollectionProperty Name="DictionaryFolders">
+      <Value>.\</Value>
+    </CollectionProperty>
+  </GlobalSettings>
+  <Analyzers>
+    <Analyzer AnalyzerId="StyleCopPlus.StyleCopPlusRules">
+      <AnalyzerSettings>
+        <StringProperty Name="AdvancedNaming_Words">3D A B C DE EN FxCop ID IDs IPv4 IPv6 OK StyleCop US X</StringProperty>
+      </AnalyzerSettings>
+    </Analyzer>
+  </Analyzers>
+</StyleCopSettings>

@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Dictionary>
+	<Words>
+		<!--
+		<Unrecognized>
+			<Word></Word>
+		</Unrecognized>
+		<Deprecated>
+			<Term PreferredAlternate=""></Term>
+		</Deprecated>
+		<Compound>
+			<Term CompoundAlternate=""></Term>
+		</Compound>
+		<DiscreteExceptions>
+			<Term></Term>
+		</DiscreteExceptions>
+		-->
+		<Recognized>
+			<!-- WTF? What happened to the I of IPv4/IPv6? -->
+			<Word>Pv</Word>
+		</Recognized>
+	</Words>
+	<!--
+	<Acronyms>
+		<CasingExceptions>
+			<Acronym>IPv</Acronym>
+			<Acronym>IPv4</Acronym>
+			<Acronym>IPv6</Acronym>
+		</CasingExceptions>
+	</Acronyms>
+	-->
+</Dictionary>
