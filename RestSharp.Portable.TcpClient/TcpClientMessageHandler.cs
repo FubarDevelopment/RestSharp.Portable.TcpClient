@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using RestSharp.Portable.TcpClient.Pooling;
+using RestSharp.Portable.TcpClient.ProxyHandlers;
 
 namespace RestSharp.Portable.TcpClient
 {
@@ -42,9 +43,9 @@ namespace RestSharp.Portable.TcpClient
 
         protected abstract INativeTcpClientFactory NativeTcpClientFactory { get; }
 
-        protected virtual INativeTcpClient CreateClient(NativeTcpClientConfiguration configuration)
+        protected virtual IProxyHandler GetProxyHandler(IWebProxy proxy)
         {
-            return NativeTcpClientFactory.CreateClient(configuration);
+            return new NoProxyHandler();
         }
 
         protected virtual void OnResponseReceived(HttpResponseMessage message)
@@ -132,11 +133,13 @@ namespace RestSharp.Portable.TcpClient
                 ReadWriteTimeout = ReadWriteTimeout ?? s_defaultReadWriteTimeout,
             };
 
+            var proxyHandler = GetProxyHandler(null);
+
             var key = new TcpConnectionKey(destinationAddress, useSsl);
             var connection = (IPooledConnection)new TcpConnection(
                 key,
                 NativeTcpClientFactory,
-                CreateClient(tcpClientConfiguration));
+                proxyHandler.CreateConnection(NativeTcpClientFactory, tcpClientConfiguration));
 
             if (forceRecreate)
             {
@@ -229,9 +232,12 @@ namespace RestSharp.Portable.TcpClient
 
                 headers.AddHeaders(request);
 
-                var pathAndQuery = requestUri.GetComponents(UriComponents.PathAndQuery, UriFormat.UriEscaped);
-
-                writer.WriteLine("{1} {2} HTTP/{0}", request.Version ?? new Version(1, 1), requestMethod.Method, pathAndQuery);
+                var proxyHandler = GetProxyHandler(null);
+                var requestLine = proxyHandler.CreateRequestLine(
+                    requestMethod,
+                    request.Version ?? new Version(1, 1),
+                    requestUri);
+                writer.WriteLine(requestLine);
                 foreach (var header in headers)
                     writer.WriteLine("{0}: {1}", header.Key, string.Join(",", header.Value));
 
@@ -241,15 +247,6 @@ namespace RestSharp.Portable.TcpClient
                 var data = encoding.GetBytes(writer.ToString());
                 await stream.WriteAsync(data, 0, data.Length, cancellationToken);
             }
-        }
-
-        private class ActiveTcpClientInfo
-        {
-            public INativeTcpClient TcpClient { get; set; }
-
-            public Stream TcpStream { get; set; }
-
-            public bool UseSsl { get; set; }
         }
     }
 }
