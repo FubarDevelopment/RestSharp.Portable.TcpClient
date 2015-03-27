@@ -99,7 +99,7 @@ namespace RestSharp.Portable.TcpClient
             return false;
         }
 
-        private async Task<IPooledConnection> GetOrCreateConnection(Uri requestUri, bool forceRecreate)
+        private async Task<IPooledConnection> GetOrCreateConnection(IProxyHandler proxyHandler, Uri requestUri, bool forceRecreate)
         {
             var useSsl = string.Equals(requestUri.Scheme, "https", StringComparison.OrdinalIgnoreCase);
             var destinationAddress = new EndPoint(requestUri);
@@ -133,8 +133,6 @@ namespace RestSharp.Portable.TcpClient
                 ReadWriteTimeout = ReadWriteTimeout ?? s_defaultReadWriteTimeout,
             };
 
-            var proxyHandler = GetProxyHandler(null);
-
             var key = new TcpConnectionKey(destinationAddress, useSsl);
             var connection = (IPooledConnection)new TcpConnection(
                 key,
@@ -167,14 +165,15 @@ namespace RestSharp.Portable.TcpClient
             CancellationToken cancellationToken,
             bool forceRecreate)
         {
-            var connection = await GetOrCreateConnection(requestUri, forceRecreate);
+            var proxyHandler = GetProxyHandler(null);
+            var connection = await GetOrCreateConnection(proxyHandler, requestUri, forceRecreate);
             var destinationAddress = new EndPoint(requestUri);
             var stream = await connection.EnsureConnectionIsOpen(destinationAddress, cancellationToken);
 
             await ValidateHeader(request);
 
             // Send request
-            await WriteRequestHeader(stream, request, requestMethod, requestUri, cancellationToken);
+            await WriteRequestHeader(proxyHandler, stream, request, requestMethod, requestUri, cancellationToken);
             await WriteContent(stream, request, cancellationToken);
             await stream.FlushAsync(cancellationToken);
 
@@ -209,7 +208,7 @@ namespace RestSharp.Portable.TcpClient
                 await input.CopyToAsync(stream, 4096, cancellationToken);
         }
 
-        private async Task WriteRequestHeader(Stream stream, HttpRequestMessage request, HttpMethod requestMethod, Uri requestUri, CancellationToken cancellationToken)
+        private async Task WriteRequestHeader(IProxyHandler proxyHandler, Stream stream, HttpRequestMessage request, HttpMethod requestMethod, Uri requestUri, CancellationToken cancellationToken)
         {
             using (var writer = new StringWriter
             {
@@ -232,7 +231,6 @@ namespace RestSharp.Portable.TcpClient
 
                 headers.AddHeaders(request);
 
-                var proxyHandler = GetProxyHandler(null);
                 var requestLine = proxyHandler.CreateRequestLine(
                     requestMethod,
                     request.Version ?? new Version(1, 1),
