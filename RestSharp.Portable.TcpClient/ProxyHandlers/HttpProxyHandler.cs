@@ -15,6 +15,7 @@ namespace RestSharp.Portable.TcpClient.ProxyHandlers
         public HttpProxyHandler(IWebProxy proxy, Uri proxyUri)
         {
             _proxyUri = proxyUri;
+            _proxy = proxy;
         }
 
         public IWebProxy Proxy
