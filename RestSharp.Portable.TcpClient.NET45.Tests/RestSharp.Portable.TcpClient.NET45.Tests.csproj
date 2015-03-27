@@ -69,6 +69,7 @@
     <Compile Include="NetworkConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SocksProxyAvailableTheoryAttribute.cs" />
+    <Compile Include="TcpClientHttpGet.cs" />
     <Compile Include="TestRequests.cs" />
   </ItemGroup>
   <ItemGroup>

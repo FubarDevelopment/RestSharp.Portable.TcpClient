@@ -51,7 +51,11 @@ namespace RestSharp.Portable.TcpClient
 
         protected virtual IProxyHandler GetProxyHandler(Uri requestUri, IWebProxy proxy, Uri proxyUri)
         {
-            return _noProxyHandler;
+            if (proxy == null || proxyUri == null)
+                return _noProxyHandler;
+            if (string.Equals(requestUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+                return _noProxyHandler;
+            return new HttpProxyHandler(proxyUri);
         }
 
         protected virtual void OnResponseReceived(HttpResponseMessage message)
