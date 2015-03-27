@@ -20,6 +20,10 @@ namespace RestSharp.Portable.TcpClient
 
         private readonly ConcurrentDictionary<TcpConnectionKey, IPooledConnection> _connections = new ConcurrentDictionary<TcpConnectionKey, IPooledConnection>(TcpConnectionKeyComparer.Default);
 
+        private readonly ConcurrentDictionary<Uri, IProxyHandler> _proxyHandlers = new ConcurrentDictionary<Uri, IProxyHandler>();
+
+        private readonly IProxyHandler _noProxyHandler = new NoProxyHandler();
+
         protected TcpClientMessageHandler()
         {
             MaximumStatusLineLength = 100;
@@ -39,13 +43,15 @@ namespace RestSharp.Portable.TcpClient
 
         public bool ResolveHost { get; set; }
 
+        public IWebProxy Proxy { get; set; }
+
         protected abstract AddressCompatibility AddressCompatibility { get; }
 
         protected abstract INativeTcpClientFactory NativeTcpClientFactory { get; }
 
-        protected virtual IProxyHandler GetProxyHandler(IWebProxy proxy)
+        protected virtual IProxyHandler GetProxyHandler(Uri requestUri, IWebProxy proxy, Uri proxyUri)
         {
-            return new NoProxyHandler();
+            return _noProxyHandler;
         }
 
         protected virtual void OnResponseReceived(HttpResponseMessage message)
@@ -97,6 +103,16 @@ namespace RestSharp.Portable.TcpClient
             }
 
             return false;
+        }
+
+        private IProxyHandler GetProxyHandler(Uri requestUri)
+        {
+            if (Proxy == null)
+                return _noProxyHandler;
+            var proxy = Proxy.GetProxy(requestUri);
+            if (proxy == null)
+                return _noProxyHandler;
+            return _proxyHandlers.GetOrAdd(proxy, proxyUri => GetProxyHandler(requestUri, Proxy, proxyUri));
         }
 
         private async Task<IPooledConnection> GetOrCreateConnection(IProxyHandler proxyHandler, Uri requestUri, bool forceRecreate)
@@ -165,7 +181,7 @@ namespace RestSharp.Portable.TcpClient
             CancellationToken cancellationToken,
             bool forceRecreate)
         {
-            var proxyHandler = GetProxyHandler(null);
+            var proxyHandler = GetProxyHandler(requestUri);
             var connection = await GetOrCreateConnection(proxyHandler, requestUri, forceRecreate);
             var destinationAddress = new EndPoint(requestUri);
             var stream = await connection.EnsureConnectionIsOpen(destinationAddress, cancellationToken);

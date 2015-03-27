@@ -49,8 +49,6 @@ namespace RestSharp.Portable.TcpClient
                 _factory = factory;
             }
 
-            public IWebProxy Proxy { get; set; }
-
             protected override AddressCompatibility AddressCompatibility
             {
                 get
