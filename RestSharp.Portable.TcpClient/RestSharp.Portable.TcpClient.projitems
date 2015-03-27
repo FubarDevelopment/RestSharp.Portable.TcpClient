@@ -17,6 +17,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)EndPointUtilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INativeTcpClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INativeTcpClientFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IProxyAuthenticationModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IProxyAuthenticationModuleFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IProxyHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NetworkConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NonDisposableStream.cs" />
@@ -24,6 +26,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Pooling\TcpConnection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pooling\TcpConnectionKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pooling\TcpConnectionKeyComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthenticator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthenticators\HttpBasicProxyAuthenticator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthFactories\NoneProxyAuthFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthFactories\HttpBasicProxyAuthFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProxyHandlers\HttpProxyHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProxyHandlers\NoProxyHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TaskExtensions.cs" />

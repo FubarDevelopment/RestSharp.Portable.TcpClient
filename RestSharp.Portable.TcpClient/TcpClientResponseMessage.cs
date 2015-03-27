@@ -9,6 +9,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
+using RestSharp.Portable.TcpClient.Pooling;
+
 namespace RestSharp.Portable.TcpClient
 {
     internal class TcpClientResponseMessage : HttpResponseMessage
@@ -37,12 +39,15 @@ namespace RestSharp.Portable.TcpClient
 
         private readonly Uri _requestUri;
 
+        private readonly IPooledConnection _connection;
+
         private bool _disposed;
 
         private TcpClientStream _networkStream;
 
-        public TcpClientResponseMessage(HttpRequestMessage request, Uri requestUri, TcpClientMessageHandler handler)
+        public TcpClientResponseMessage(HttpRequestMessage request, Uri requestUri, TcpClientMessageHandler handler, IPooledConnection connection)
         {
+            _connection = connection;
             _requestUri = requestUri;
             _handler = handler;
             RequestMessage = request;
@@ -108,7 +113,11 @@ namespace RestSharp.Portable.TcpClient
         {
             if (disposing && !_disposed)
             {
-                if (Version >= WellKnownHttpVersions.Version10)
+                if (_connection != null && Headers.ConnectionClose.GetValueOrDefault())
+                {
+                    _connection.Dispose();
+                }
+                else if (Version >= WellKnownHttpVersions.Version10)
                 {
                     // Ensure that all content is read!
                     _networkStream.CopyTo(Stream.Null);

@@ -9,9 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestSharp.Portable.TcpClien
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestSharp.Portable.TcpClient.NET45.Tests", "RestSharp.Portable.TcpClient.NET45.Tests\RestSharp.Portable.TcpClient.NET45.Tests.csproj", "{A211F8DF-D8AD-4D88-97E4-3808B0B36221}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestSharp.Portable.TcpClient.PCL", "RestSharp.Portable.TcpClient.PCL\RestSharp.Portable.TcpClient.PCL.csproj", "{CC411891-2AAE-4473-9C22-3CB2DAD567E7}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RestSharp.Portable.TcpClient\RestSharp.Portable.TcpClient.projitems*{56d08c85-18c2-481d-bd46-d2885e1feaeb}*SharedItemsImports = 13
+		RestSharp.Portable.TcpClient\RestSharp.Portable.TcpClient.projitems*{cc411891-2aae-4473-9c22-3cb2dad567e7}*SharedItemsImports = 4
 		RestSharp.Portable.TcpClient\RestSharp.Portable.TcpClient.projitems*{e71ed45b-b6b8-494e-a056-60d70d3e9424}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +30,10 @@ Global
 		{A211F8DF-D8AD-4D88-97E4-3808B0B36221}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A211F8DF-D8AD-4D88-97E4-3808B0B36221}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A211F8DF-D8AD-4D88-97E4-3808B0B36221}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC411891-2AAE-4473-9C22-3CB2DAD567E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC411891-2AAE-4473-9C22-3CB2DAD567E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC411891-2AAE-4473-9C22-3CB2DAD567E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC411891-2AAE-4473-9C22-3CB2DAD567E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

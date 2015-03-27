@@ -20,6 +20,8 @@ namespace RestSharp.Portable.TcpClient.Tests
             var request = new RestRequest("get");
             request.AddParameter("a", 1);
             var response = await client.Execute<HttpBinGetResponse>(request);
+            Assert.True(response.IsSuccess);
+            Assert.NotNull(response.Data);
             Assert.Equal(string.Format("{0}://httpbin.org/get?a=1", scheme), response.Data.Url);
             Assert.Equal(1, response.Data.Args.Count);
             Assert.True(response.Data.Args.ContainsKey("a"));
@@ -37,6 +39,7 @@ namespace RestSharp.Portable.TcpClient.Tests
                     Proxy = WebRequest.DefaultWebProxy ?? WebRequest.GetSystemWebProxy(),
                 },
                 CookieContainer = new CookieContainer(),
+                Authenticator = new ProxyAuthenticator(new NetworkCredential("1", "1")),
             };
             return client;
         }

@@ -74,7 +74,7 @@ namespace RestSharp.Portable.TcpClient.ProxyHandlers
                 await writer.FlushAsync();
             }
 
-            var response = new TcpClientResponseMessage(null, null, null);
+            var response = new TcpClientResponseMessage(null, null, null, null);
             await response.Parse(networkStream, cancellationToken, null);
             return response;
         }

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -18,9 +18,9 @@ namespace RestSharp.Portable.TcpClient
 
         private static readonly TimeSpan s_defaultReadWriteTimeout = TimeSpan.FromSeconds(300);
 
-        private readonly ConcurrentDictionary<TcpConnectionKey, IPooledConnection> _connections = new ConcurrentDictionary<TcpConnectionKey, IPooledConnection>(TcpConnectionKeyComparer.Default);
+        private readonly IDictionary<TcpConnectionKey, IPooledConnection> _connections = new Dictionary<TcpConnectionKey, IPooledConnection>(TcpConnectionKeyComparer.Default);
 
-        private readonly ConcurrentDictionary<Uri, IProxyHandler> _proxyHandlers = new ConcurrentDictionary<Uri, IProxyHandler>();
+        private readonly IDictionary<Uri, IProxyHandler> _proxyHandlers = new Dictionary<Uri, IProxyHandler>();
 
         private readonly IProxyHandler _noProxyHandler = new NoProxyHandler();
 
@@ -113,10 +113,16 @@ namespace RestSharp.Portable.TcpClient
         {
             if (Proxy == null)
                 return _noProxyHandler;
-            var proxy = Proxy.GetProxy(requestUri);
-            if (proxy == null)
+            var proxyUri = Proxy.GetProxy(requestUri);
+            if (proxyUri == null)
                 return _noProxyHandler;
-            return _proxyHandlers.GetOrAdd(proxy, proxyUri => GetProxyHandler(requestUri, Proxy, proxyUri));
+            lock (_proxyHandlers)
+            {
+                IProxyHandler proxyHandler;
+                if (!_proxyHandlers.TryGetValue(proxyUri, out proxyHandler))
+                    _proxyHandlers.Add(proxyUri, proxyHandler = GetProxyHandler(requestUri, Proxy, proxyUri));
+                return proxyHandler;
+            }
         }
 
         private async Task<IPooledConnection> GetOrCreateConnection(IProxyHandler proxyHandler, Uri requestUri, bool forceRecreate)
@@ -154,26 +160,36 @@ namespace RestSharp.Portable.TcpClient
             };
 
             var key = new TcpConnectionKey(destinationAddress, useSsl);
-            var connection = (IPooledConnection)new TcpConnection(
-                key,
-                this,
-                proxyHandler.CreateConnection(NativeTcpClientFactory, tcpClientConfiguration),
-                proxyHandler);
-
-            if (forceRecreate)
-            {
-                connection = _connections.AddOrUpdate(
+            var connectionCreateFn = new Func<IPooledConnection>(
+                () => (IPooledConnection)new TcpConnection(
                     key,
-                    connection,
-                    (k, conn) =>
-                    {
-                        conn.Dispose();
-                        return connection;
-                    });
-            }
-            else
+                    this,
+                    proxyHandler.CreateConnection(NativeTcpClientFactory, tcpClientConfiguration),
+                    proxyHandler));
+
+            IPooledConnection connection;
+            lock (_connections)
             {
-                connection = _connections.GetOrAdd(key, connection);
+                if (forceRecreate)
+                {
+                    IPooledConnection oldConnection;
+                    if (_connections.TryGetValue(key, out oldConnection))
+                    {
+                        oldConnection.Dispose();
+                        _connections.Remove(key);
+                    }
+
+                    connection = connectionCreateFn();
+                    _connections.Add(key, connection);
+                }
+                else
+                {
+                    if (!_connections.TryGetValue(key, out connection))
+                    {
+                        connection = connectionCreateFn();
+                        _connections.Add(key, connection);
+                    }
+                }
             }
 
             return connection;
@@ -202,9 +218,25 @@ namespace RestSharp.Portable.TcpClient
                 CookieContainer = new CookieContainer();
 
             // Parse response
-            var response = new TcpClientResponseMessage(request, requestUri, this);
+            var response = new TcpClientResponseMessage(request, requestUri, this, connection);
             await response.Parse(stream, cancellationToken, MaximumStatusLineLength);
-            OnResponseReceived(response);
+
+            try
+            {
+                OnResponseReceived(response);
+            }
+            finally
+            {
+                if (response.Headers.ConnectionClose.GetValueOrDefault())
+                {
+                    lock (_connections)
+                    {
+                        // The connection will be disposed by the TcpClientResponseMessage
+                        _connections.Remove(connection.Key);
+                    }
+                }
+            }
+
             return response;
         }
 
