@@ -12,6 +12,6 @@ namespace RestSharp.Portable.TcpClient
 
         INativeTcpClient CreateConnection(INativeTcpClientFactory factory, NativeTcpClientConfiguration configuration);
 
-        Task<Stream> CreateSslStream(INativeTcpClientFactory factory, Stream networkStream, EndPoint destination, CancellationToken cancellationToken);
+        Task<Stream> CreateSslStream(TcpClientMessageHandler messageHandler, Stream networkStream, EndPoint destination, CancellationToken cancellationToken);
     }
 }

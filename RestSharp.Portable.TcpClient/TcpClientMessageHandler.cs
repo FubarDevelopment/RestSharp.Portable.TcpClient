@@ -45,9 +45,9 @@ namespace RestSharp.Portable.TcpClient
 
         public IWebProxy Proxy { get; set; }
 
-        protected abstract AddressCompatibility AddressCompatibility { get; }
+        public abstract INativeTcpClientFactory NativeTcpClientFactory { get; }
 
-        protected abstract INativeTcpClientFactory NativeTcpClientFactory { get; }
+        protected abstract AddressCompatibility AddressCompatibility { get; }
 
         protected virtual IProxyHandler GetProxyHandler(Uri requestUri, IWebProxy proxy, Uri proxyUri)
         {
@@ -55,9 +55,7 @@ namespace RestSharp.Portable.TcpClient
                 return _noProxyHandler;
             if (proxyUri == requestUri)
                 return _noProxyHandler;
-             if (string.Equals(requestUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
-                 return new HttpConnectProxyHandler(proxyUri);
-            return new HttpProxyHandler(proxyUri);
+            return new HttpProxyHandler(proxy, proxyUri);
         }
 
         protected virtual void OnResponseReceived(HttpResponseMessage message)
@@ -158,7 +156,7 @@ namespace RestSharp.Portable.TcpClient
             var key = new TcpConnectionKey(destinationAddress, useSsl);
             var connection = (IPooledConnection)new TcpConnection(
                 key,
-                NativeTcpClientFactory,
+                this,
                 proxyHandler.CreateConnection(NativeTcpClientFactory, tcpClientConfiguration),
                 proxyHandler);
 

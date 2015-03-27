@@ -49,6 +49,11 @@ namespace RestSharp.Portable.TcpClient
                 _factory = factory;
             }
 
+            public override INativeTcpClientFactory NativeTcpClientFactory
+            {
+                get { return _factory._tcpClientFactory; }
+            }
+
             protected override AddressCompatibility AddressCompatibility
             {
                 get
@@ -57,11 +62,6 @@ namespace RestSharp.Portable.TcpClient
                            | AddressCompatibility.SupportsIPv4
                            | AddressCompatibility.SupportsIPv6;
                 }
-            }
-
-            protected override INativeTcpClientFactory NativeTcpClientFactory
-            {
-                get { return _factory._tcpClientFactory; }
             }
         }
     }

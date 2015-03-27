@@ -18,9 +18,9 @@ namespace RestSharp.Portable.TcpClient.ProxyHandlers
             return factory.CreateClient(configuration);
         }
 
-        public async Task<Stream> CreateSslStream(INativeTcpClientFactory factory, Stream networkStream, EndPoint destination, CancellationToken cancellationToken)
+        public async Task<Stream> CreateSslStream(TcpClientMessageHandler messageHandler, Stream networkStream, EndPoint destination, CancellationToken cancellationToken)
         {
-            return await factory.CreateSslStream(networkStream, destination.Host, cancellationToken);
+            return await messageHandler.NativeTcpClientFactory.CreateSslStream(networkStream, destination.Host, cancellationToken);
         }
     }
 }

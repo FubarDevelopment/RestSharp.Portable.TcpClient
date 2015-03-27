@@ -24,7 +24,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Pooling\TcpConnection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pooling\TcpConnectionKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pooling\TcpConnectionKeyComparer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ProxyHandlers\HttpConnectProxyHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProxyHandlers\HttpProxyHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProxyHandlers\NoProxyHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TaskExtensions.cs" />
