@@ -60,7 +60,7 @@ namespace RestSharp.Portable.TcpClient.ProxyHandlers
             using (var writer = new StreamWriter(networkStream))
             {
                 var requestLine = string.Format("CONNECT {0} HTTP/1.1", destination);
-                await writer.WriteAsync(requestLine);
+                await writer.WriteLineAsync(requestLine);
                 await writer.WriteHttpHeaderAsync(headers);
                 await writer.WriteLineAsync();
                 await writer.FlushAsync();
