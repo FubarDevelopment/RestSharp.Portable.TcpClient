@@ -17,10 +17,13 @@ namespace RestSharp.Portable.TcpClient.Pooling
 
         private readonly INativeTcpClientFactory _factory;
 
-        public TcpConnection(TcpConnectionKey key, INativeTcpClientFactory factory, INativeTcpClient client)
+        private readonly IProxyHandler _proxyHandler;
+
+        public TcpConnection(TcpConnectionKey key, INativeTcpClientFactory factory, INativeTcpClient client, IProxyHandler proxyHandler)
         {
             Key = key;
             _factory = factory;
+            _proxyHandler = proxyHandler;
             Client = client;
             Lifetime = s_infiniteLifetime;
             MaxUsageCount = InfiniteUsageCount;
@@ -62,7 +65,7 @@ namespace RestSharp.Portable.TcpClient.Pooling
             await Client.Connect(cancellationToken);
             var stream = Client.GetStream();
             if (Key.UseSsl)
-                stream = await _factory.CreateSslStream(stream, destinationAddress.Host);
+                stream = await _proxyHandler.CreateSslStream(_factory, stream, destinationAddress, cancellationToken);
 
             Stream = stream;
             return stream;

@@ -55,8 +55,8 @@ namespace RestSharp.Portable.TcpClient
                 return _noProxyHandler;
             if (proxyUri == requestUri)
                 return _noProxyHandler;
-            if (string.Equals(requestUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
-                return _noProxyHandler;
+             if (string.Equals(requestUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+                 return new HttpConnectProxyHandler(proxyUri);
             return new HttpProxyHandler(proxyUri);
         }
 
@@ -159,7 +159,8 @@ namespace RestSharp.Portable.TcpClient
             var connection = (IPooledConnection)new TcpConnection(
                 key,
                 NativeTcpClientFactory,
-                proxyHandler.CreateConnection(NativeTcpClientFactory, tcpClientConfiguration));
+                proxyHandler.CreateConnection(NativeTcpClientFactory, tcpClientConfiguration),
+                proxyHandler);
 
             if (forceRecreate)
             {
@@ -204,7 +205,7 @@ namespace RestSharp.Portable.TcpClient
 
             // Parse response
             var response = new TcpClientResponseMessage(request, requestUri, this);
-            await response.Parse(stream, cancellationToken);
+            await response.Parse(stream, cancellationToken, MaximumStatusLineLength);
             OnResponseReceived(response);
             return response;
         }
@@ -258,8 +259,7 @@ namespace RestSharp.Portable.TcpClient
                     request.Version ?? new Version(1, 1),
                     requestUri);
                 writer.WriteLine(requestLine);
-                foreach (var header in headers)
-                    writer.WriteLine("{0}: {1}", header.Key, string.Join(",", header.Value));
+                writer.WriteHttpHeader(headers);
 
                 writer.WriteLine();
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Security;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RestSharp.Portable.TcpClient
@@ -14,7 +15,7 @@ namespace RestSharp.Portable.TcpClient
             return new NativeTcpClient(configuration);
         }
 
-        public async Task<Stream> CreateSslStream(Stream networkStream, string destinationHost)
+        public async Task<Stream> CreateSslStream(Stream networkStream, string destinationHost, CancellationToken cancellationToken)
         {
             SslStream sslStream;
 

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RestSharp.Portable.TcpClient
@@ -10,6 +9,6 @@ namespace RestSharp.Portable.TcpClient
     {
         INativeTcpClient CreateClient(NativeTcpClientConfiguration configuration);
 
-        Task<Stream> CreateSslStream(Stream networkStream, string destinationHost);
+        Task<Stream> CreateSslStream(Stream networkStream, string destinationHost, CancellationToken cancellationToken);
     }
 }

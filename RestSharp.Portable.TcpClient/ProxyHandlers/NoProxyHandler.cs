@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RestSharp.Portable.TcpClient.ProxyHandlers
 {
@@ -16,6 +16,11 @@ namespace RestSharp.Portable.TcpClient.ProxyHandlers
         public INativeTcpClient CreateConnection(INativeTcpClientFactory factory, NativeTcpClientConfiguration configuration)
         {
             return factory.CreateClient(configuration);
+        }
+
+        public async Task<Stream> CreateSslStream(INativeTcpClientFactory factory, Stream networkStream, EndPoint destination, CancellationToken cancellationToken)
+        {
+            return await factory.CreateSslStream(networkStream, destination.Host, cancellationToken);
         }
     }
 }

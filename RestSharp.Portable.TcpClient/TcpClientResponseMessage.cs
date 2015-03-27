@@ -50,9 +50,9 @@ namespace RestSharp.Portable.TcpClient
 
         private delegate void HttpHeaderDelegate(string[] values, TcpClientResponseMessage response, TcpClientMessageHandler handler);
 
-        public async Task Parse(Stream inputStream, CancellationToken cancellationToken)
+        public async Task Parse(Stream inputStream, CancellationToken cancellationToken, int? maximumStatusLineLength)
         {
-            var statusLineData = await ReadBuffer(inputStream, _handler.MaximumStatusLineLength, cancellationToken);
+            var statusLineData = await ReadBuffer(inputStream, maximumStatusLineLength, cancellationToken);
 
             Match statusLineMatch;
             if (!statusLineData.Item3)
@@ -174,7 +174,7 @@ namespace RestSharp.Portable.TcpClient
             TcpClientResponseMessage response,
             TcpClientMessageHandler handler)
         {
-            if (!response._handler.UseCookies)
+            if (response._handler == null || !response._handler.UseCookies)
                 return;
             foreach (var value in values)
             {

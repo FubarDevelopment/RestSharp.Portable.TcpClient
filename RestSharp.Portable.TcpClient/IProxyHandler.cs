@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
-using System.Text;
-
-using RestSharp.Portable.TcpClient.Pooling;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RestSharp.Portable.TcpClient
 {
@@ -12,5 +11,7 @@ namespace RestSharp.Portable.TcpClient
         string CreateRequestLine(HttpMethod method, Version version, Uri requestUri);
 
         INativeTcpClient CreateConnection(INativeTcpClientFactory factory, NativeTcpClientConfiguration configuration);
+
+        Task<Stream> CreateSslStream(INativeTcpClientFactory factory, Stream networkStream, EndPoint destination, CancellationToken cancellationToken);
     }
 }
