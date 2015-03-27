@@ -53,6 +53,8 @@ namespace RestSharp.Portable.TcpClient
         {
             if (proxy == null || proxyUri == null)
                 return _noProxyHandler;
+            if (proxyUri == requestUri)
+                return _noProxyHandler;
             if (string.Equals(requestUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
                 return _noProxyHandler;
             return new HttpProxyHandler(proxyUri);
