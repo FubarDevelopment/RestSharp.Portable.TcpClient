@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Pooling\TcpConnectionKeyComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthenticator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthenticators\HttpBasicProxyAuthenticator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthenticators\NtlmProxyAuthenticator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthenticators\HttpDigestProxyAuthenticator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthFactories\HttpDigestProxyAuthFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProxyAuthFactories\NoneProxyAuthFactory.cs" />
