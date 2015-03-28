@@ -10,6 +10,8 @@ namespace RestSharp.Portable.TcpClient.ProxyAuthenticators
 {
     public class HttpDigestProxyAuthenticator : IProxyAuthenticationModule
     {
+        private readonly string _authHeaderName;
+
         private readonly NetworkCredential _credential;
 
         private string _realm;
@@ -30,11 +32,21 @@ namespace RestSharp.Portable.TcpClient.ProxyAuthenticators
 
         /// <summary>Initializes a new instance of the <see cref="HttpDigestProxyAuthenticator"/> class.</summary>
         /// <param name="credential">Network credentials</param>
-        /// <param name="moduleData">Data from the Proxy-Authenticate header</param>
-        public HttpDigestProxyAuthenticator(NetworkCredential credential, string moduleData)
+        /// <param name="authorizationData">Data from the Proxy-Authenticate header</param>
+        public HttpDigestProxyAuthenticator(NetworkCredential credential, string authorizationData)
+            : this(credential, authorizationData, "Proxy-Authorization")
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="HttpDigestProxyAuthenticator"/> class.</summary>
+        /// <param name="credential">Network credentials</param>
+        /// <param name="authorizationData">Data from the Proxy-Authenticate header</param>
+        /// <param name="headerEntryName">The header entry name that will be used to store the authentication value</param>
+        public HttpDigestProxyAuthenticator(NetworkCredential credential, string authorizationData, string headerEntryName)
         {
             _credential = credential;
-            ParseResponseHeader(moduleData);
+            _authHeaderName = headerEntryName;
+            ParseResponseHeader(authorizationData);
         }
 
         [Flags]
@@ -71,7 +83,7 @@ namespace RestSharp.Portable.TcpClient.ProxyAuthenticators
             if (HasDigestHeader)
             {
                 var digestHeader = GetDigestHeader(client, request);
-                request.AddParameter("Proxy-Authorization", digestHeader, ParameterType.HttpHeader);
+                request.AddParameter(_authHeaderName, digestHeader, ParameterType.HttpHeader);
             }
         }
 

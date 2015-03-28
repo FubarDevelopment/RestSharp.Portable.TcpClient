@@ -7,14 +7,25 @@ namespace RestSharp.Portable.TcpClient.ProxyAuthenticators
 {
     public class HttpBasicProxyAuthenticator : IProxyAuthenticationModule
     {
-        private readonly string _authHeader;
+        private readonly string _authHeaderValue;
+
+        private readonly string _authHeaderName;
 
         /// <summary>Initializes a new instance of the <see cref="HttpBasicProxyAuthenticator"/> class.</summary>
         /// <param name="credential">Network credentials</param>
         public HttpBasicProxyAuthenticator(NetworkCredential credential)
+            : this(credential, "Proxy-Authorization")
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="HttpBasicProxyAuthenticator"/> class.</summary>
+        /// <param name="credential">Network credentials</param>
+        /// <param name="headerEntryName">The header entry name that will be used to store the authentication value</param>
+        public HttpBasicProxyAuthenticator(NetworkCredential credential, string headerEntryName)
         {
             var token = Convert.ToBase64String(Encoding.UTF8.GetBytes(string.Format("{0}:{1}", credential.UserName, credential.Password)));
-            _authHeader = string.Format("Basic {0}", token);
+            _authHeaderValue = string.Format("Basic {0}", token);
+            _authHeaderName = headerEntryName;
         }
 
         /// <summary>Modifies the request to ensure that the authentication requirements are met.</summary>
@@ -23,9 +34,9 @@ namespace RestSharp.Portable.TcpClient.ProxyAuthenticators
         public void Authenticate(IRestClient client, IRestRequest request)
         {
             // only add the Authorization parameter if it hasn't been added by a previous Execute
-            if (request.Parameters.Any(p => p.Name.Equals("Proxy-Authorization", StringComparison.OrdinalIgnoreCase)))
+            if (request.Parameters.Any(p => p.Name.Equals(_authHeaderName, StringComparison.OrdinalIgnoreCase)))
                 return;
-            request.AddParameter("Proxy-Authorization", _authHeader, ParameterType.HttpHeader);
+            request.AddParameter(_authHeaderName, _authHeaderValue, ParameterType.HttpHeader);
         }
     }
 }
