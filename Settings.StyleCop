@@ -8,7 +8,7 @@
   <Analyzers>
     <Analyzer AnalyzerId="StyleCopPlus.StyleCopPlusRules">
       <AnalyzerSettings>
-        <StringProperty Name="AdvancedNaming_Words">3D A B C DE EN FxCop ID IDs IPv4 IPv6 OK StyleCop US X</StringProperty>
+        <StringProperty Name="AdvancedNaming_Words">3D A B C DE EN FxCop ID IDs IPv4 IPv6 MD5 MD5sess OK StyleCop US X</StringProperty>
       </AnalyzerSettings>
     </Analyzer>
   </Analyzers>

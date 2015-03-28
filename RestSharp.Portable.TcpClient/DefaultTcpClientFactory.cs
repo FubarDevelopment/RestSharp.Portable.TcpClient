@@ -15,8 +15,6 @@ namespace RestSharp.Portable.TcpClient
             _tcpClientFactory = tcpClientFactory;
         }
 
-        public IWebProxy Proxy { get; set; }
-
         public bool ResolveHost { get; set; }
 
         public bool AllowRedirect { get; set; }
@@ -27,7 +25,7 @@ namespace RestSharp.Portable.TcpClient
             {
                 ResolveHost = ResolveHost,
                 AllowRedirect = AllowRedirect,
-                Proxy = Proxy,
+                Proxy = client.Proxy,
             };
 
             var cookies = GetCookies(client, request);

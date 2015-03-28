@@ -36,10 +36,10 @@ namespace RestSharp.Portable.TcpClient.Tests
             {
                 HttpClientFactory = new DefaultTcpClientFactory(nativeFactory)
                 {
-                    Proxy = WebRequest.DefaultWebProxy ?? WebRequest.GetSystemWebProxy(),
                     ResolveHost = !useHost,
                 },
                 CookieContainer = new CookieContainer(),
+                Proxy = WebRequest.DefaultWebProxy ?? WebRequest.GetSystemWebProxy(),
             };
             return client;
         }

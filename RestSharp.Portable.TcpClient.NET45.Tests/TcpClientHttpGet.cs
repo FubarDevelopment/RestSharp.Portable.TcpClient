@@ -31,15 +31,24 @@ namespace RestSharp.Portable.TcpClient.Tests
         private static RestClient CreateClient(string baseUrl)
         {
             var nativeFactory = new NativeTcpClientFactory();
+            var testCredentials = new CredentialCache();
+
+            // Fiddler
+            testCredentials.Add(new Uri("http://localhost:8888"), "Basic", new NetworkCredential("1", "1"));
+            testCredentials.Add(new Uri("http://localhost:8889"), "Basic", new NetworkCredential("1", "1"));
+            testCredentials.Add(new Uri("http://127.0.0.1:8888"), "Basic", new NetworkCredential("1", "1"));
+            testCredentials.Add(new Uri("http://127.0.0.1:8889"), "Basic", new NetworkCredential("1", "1"));
+
+            // Squid
+            testCredentials.Add(new Uri("http://localhost:3128"), "Digest", new NetworkCredential("TestUser", "testpwd"));
+            testCredentials.Add(new Uri("http://127.0.0.1:3128"), "Digest", new NetworkCredential("TestUser", "testpwd"));
 
             var client = new RestClient(baseUrl)
             {
-                HttpClientFactory = new DefaultTcpClientFactory(nativeFactory)
-                {
-                    Proxy = WebRequest.DefaultWebProxy ?? WebRequest.GetSystemWebProxy(),
-                },
+                HttpClientFactory = new DefaultTcpClientFactory(nativeFactory),
                 CookieContainer = new CookieContainer(),
-                Authenticator = new ProxyAuthenticator(new NetworkCredential("1", "1")),
+                Authenticator = new ProxyAuthenticator(testCredentials),
+                Proxy = WebRequest.DefaultWebProxy ?? WebRequest.GetSystemWebProxy(),
             };
             return client;
         }

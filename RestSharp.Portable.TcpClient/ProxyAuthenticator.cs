@@ -17,6 +17,7 @@ namespace RestSharp.Portable.TcpClient
             {
                 new NoneProxyAuthFactory(),
                 new HttpBasicProxyAuthFactory(),
+                new HttpDigestProxyAuthFactory(),
             }.ToDictionary(x => x.Module, StringComparer.OrdinalIgnoreCase);
 
         private readonly ICredentials _credentials;
@@ -63,15 +64,23 @@ namespace RestSharp.Portable.TcpClient
 
         public virtual void AuthenticationFailed(IRestClient client, IRestRequest request, IRestResponse response)
         {
+            Authenticator = null;
+
+            if (client.Proxy == null)
+                return;
+
             var header = response.Headers.GetValues("Proxy-Authenticate").FirstOrDefault();
             if (string.IsNullOrWhiteSpace(header))
-            {
-                Authenticator = null;
                 return;
-            }
 
             ParseAuthenticateHeader(header.Trim());
-            var credential = _credentials.GetCredential(client.BuildUri(request), Method);
+
+            var requestUri = client.BuildUri(request);
+            var proxyUri = client.Proxy.GetProxy(requestUri);
+            if (proxyUri == null)
+                return;
+
+            var credential = _credentials.GetCredential(proxyUri, Method);
             Authenticator = CreateAuthenticationModule(credential);
         }
 
