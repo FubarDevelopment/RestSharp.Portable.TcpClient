@@ -7,7 +7,7 @@ namespace RestSharp.Portable.TcpClient.ProxyAuthFactories
 {
     public class HttpBasicProxyAuthFactory : IProxyAuthenticationModuleFactory
     {
-        public string Module
+        public string ModuleName
         {
             get { return "Basic"; }
         }

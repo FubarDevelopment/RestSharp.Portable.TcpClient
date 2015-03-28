@@ -5,7 +5,7 @@ namespace RestSharp.Portable.TcpClient.ProxyAuthFactories
 {
     public class NoneProxyAuthFactory : IProxyAuthenticationModuleFactory
     {
-        public string Module
+        public string ModuleName
         {
             get { return "None"; }
         }

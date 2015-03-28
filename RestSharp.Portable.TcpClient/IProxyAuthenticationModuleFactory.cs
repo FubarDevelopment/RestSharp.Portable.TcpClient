@@ -5,7 +5,7 @@ namespace RestSharp.Portable.TcpClient
 {
     public interface IProxyAuthenticationModuleFactory
     {
-        string Module { get; }
+        string ModuleName { get; }
 
         IProxyAuthenticationModule CreateModule(string moduleData, NetworkCredential credential);
     }

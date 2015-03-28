@@ -12,13 +12,18 @@ namespace RestSharp.Portable.TcpClient
     {
         private static readonly char[] _whiteSpaceCharacters = { ' ', '\t' };
 
-        private static readonly IDictionary<string, IProxyAuthenticationModuleFactory> _proxyAuthenticationModuleFactories =
+        private static readonly IList<IProxyAuthenticationModuleFactory> _proxyAuthenticationModuleFactories =
             new List<IProxyAuthenticationModuleFactory>()
             {
                 new NoneProxyAuthFactory(),
                 new HttpBasicProxyAuthFactory(),
                 new HttpDigestProxyAuthFactory(),
-            }.ToDictionary(x => x.Module, StringComparer.OrdinalIgnoreCase);
+            };
+
+        private static readonly IDictionary<string, int> _proxyNames =
+            _proxyAuthenticationModuleFactories
+                .Select((mod, index) => new { mod.ModuleName, index })
+                .ToDictionary(x => x.ModuleName, x => x.index, StringComparer.OrdinalIgnoreCase);
 
         private readonly ICredentials _credentials;
 
@@ -69,42 +74,58 @@ namespace RestSharp.Portable.TcpClient
             if (client.Proxy == null)
                 return;
 
-            var header = response.Headers.GetValues("Proxy-Authenticate").FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(header))
-                return;
-
-            ParseAuthenticateHeader(header.Trim());
-
             var requestUri = client.BuildUri(request);
             var proxyUri = client.Proxy.GetProxy(requestUri);
             if (proxyUri == null)
                 return;
 
+            var authMethods = response
+                .Headers.GetValues("Proxy-Authenticate")
+                .Select(x => new AuthMethodInfo(x))
+                .ToList();
+
+            if (authMethods.Count == 0)
+                return;
+
+            var bestAuthMethodItem =
+                (from authMethod in authMethods
+                 where _proxyNames.ContainsKey(authMethod.Name)
+                 select new { Index = _proxyNames[authMethod.Name], Info = authMethod })
+                    .OrderByDescending(x => x.Index)
+                    .First();
+
+            Method = bestAuthMethodItem.Info.Name;
+            MethodData = bestAuthMethodItem.Info.Info;
+
+            var factory = _proxyAuthenticationModuleFactories[bestAuthMethodItem.Index];
+            if (factory == null)
+                return;
+
             var credential = _credentials.GetCredential(proxyUri, Method);
-            Authenticator = CreateAuthenticationModule(credential);
+
+            Authenticator = factory.CreateModule(MethodData, credential);
         }
 
-        protected virtual IProxyAuthenticationModule CreateAuthenticationModule(NetworkCredential credential)
+        private class AuthMethodInfo
         {
-            IProxyAuthenticationModuleFactory factory;
-            if (!_proxyAuthenticationModuleFactories.TryGetValue(Method, out factory))
-                return null;
-            return factory.CreateModule(MethodData, credential);
-        }
+            public AuthMethodInfo(string headerValue)
+            {
+                var firstWhitespace = headerValue.IndexOfAny(_whiteSpaceCharacters);
+                if (firstWhitespace == -1)
+                {
+                    Name = headerValue;
+                    Info = null;
+                }
+                else
+                {
+                    Name = headerValue.Substring(0, firstWhitespace);
+                    Info = headerValue.Substring(firstWhitespace).TrimStart();
+                }
+            }
 
-        private void ParseAuthenticateHeader(string header)
-        {
-            var firstWhitespace = header.IndexOfAny(_whiteSpaceCharacters);
-            if (firstWhitespace == -1)
-            {
-                Method = header;
-                MethodData = null;
-            }
-            else
-            {
-                Method = header.Substring(0, firstWhitespace);
-                MethodData = header.Substring(firstWhitespace).TrimStart();
-            }
+            public string Name { get; set; }
+
+            public string Info { get; set; }
         }
     }
 }
