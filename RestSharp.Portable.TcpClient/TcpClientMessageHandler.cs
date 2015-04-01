@@ -68,7 +68,7 @@ namespace RestSharp.Portable.TcpClient
         {
             bool secondTry;
 
-            HttpResponseMessage response;
+            TcpClientResponseMessage response;
             try
             {
                 response = await InternalSendAsync(request, request.Method, request.RequestUri, cancellationToken, false);
@@ -195,7 +195,7 @@ namespace RestSharp.Portable.TcpClient
             return connection;
         }
 
-        private async Task<HttpResponseMessage> InternalSendAsync(
+        private async Task<TcpClientResponseMessage> InternalSendAsync(
             HttpRequestMessage request,
             HttpMethod requestMethod,
             Uri requestUri,
