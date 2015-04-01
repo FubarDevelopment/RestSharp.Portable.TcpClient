@@ -37,8 +37,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp.Portable">
-      <HintPath>..\packages\FubarCoder.RestSharp.Portable.2.4.0\lib\net45\RestSharp.Portable.dll</HintPath>
+    <Reference Include="RestSharp.Portable, Version=3.0.0.0, Culture=neutral, PublicKeyToken=be81bb0f53eab22f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\FubarCoder.RestSharp.Portable.3.0.0-alpha1\lib\net45\RestSharp.Portable.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
