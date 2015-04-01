@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading.Tasks;
 
+using RestSharp.Portable.Authenticators;
+
 using Xunit;
 
 namespace RestSharp.Portable.TcpClient.Tests
@@ -43,11 +45,16 @@ namespace RestSharp.Portable.TcpClient.Tests
             testCredentials.Add(new Uri("http://localhost:3128"), "Digest", new NetworkCredential("TestUser", "testpwd"));
             testCredentials.Add(new Uri("http://127.0.0.1:3128"), "Digest", new NetworkCredential("TestUser", "testpwd"));
 
+            var challengeHandler = new AuthenticationChallengeHandler(AuthHeader.Proxy);
+            challengeHandler.Register("Basic", new HttpBasicAuthenticator(AuthHeader.Proxy), 1);
+            challengeHandler.Register("Digest", new HttpDigestAuthenticator(AuthHeader.Proxy), 2);
+
             var client = new RestClient(baseUrl)
             {
                 HttpClientFactory = new DefaultTcpClientFactory(nativeFactory),
                 CookieContainer = new CookieContainer(),
-                Authenticator = new ProxyAuthenticator(testCredentials),
+                Credentials = testCredentials,
+                Authenticator = challengeHandler,
                 Proxy = WebRequest.DefaultWebProxy ?? WebRequest.GetSystemWebProxy(),
             };
             return client;

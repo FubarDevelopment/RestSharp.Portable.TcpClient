@@ -1,51 +1,42 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace RestSharp.Portable.TcpClient.ProxyAuthenticators
-{
-    public class NtlmProxyAuthenticator : IProxyAuthenticationModule
-    {
-        private readonly string _authHeaderName;
+using RestSharp.Portable.Authenticators;
 
-        private readonly NetworkCredential _credential;
+namespace RestSharp.Portable.TcpClient.Authenticators
+{
+    public class NtlmProxyAuthenticator : ISyncAuthenticator
+    {
+        private readonly AuthHeader _authHeader;
 
         /// <summary>Initializes a new instance of the <see cref="NtlmProxyAuthenticator"/> class.</summary>
-        /// <param name="credential">Network credentials</param>
-        /// <param name="authorizationData">Data from the Proxy-Authenticate header</param>
-        public NtlmProxyAuthenticator(NetworkCredential credential, string authorizationData)
-            : this(credential, authorizationData, "Proxy-Authorization")
+        public NtlmProxyAuthenticator()
+            : this(AuthHeader.Www)
         {
         }
 
         /// <summary>Initializes a new instance of the <see cref="NtlmProxyAuthenticator"/> class.</summary>
-        /// <param name="credential">Network credentials</param>
-        /// <param name="authorizationData">Data from the Proxy-Authenticate header</param>
-        /// <param name="headerEntryName">The header entry name that will be used to store the authentication value</param>
-        public NtlmProxyAuthenticator(NetworkCredential credential, string authorizationData, string headerEntryName)
+        /// <param name="authHeader">Authentication/Authorization header</param>
+        public NtlmProxyAuthenticator(AuthHeader authHeader)
         {
-            _credential = credential;
-            _authHeaderName = headerEntryName;
-            throw new NotImplementedException();
+            _authHeader = authHeader;
         }
 
         public static byte[] HashLmPassword(string password, Encoding encoding)
         {
-            if (!encoding.IsSingleByte)
-                throw new ArgumentException("LanManager password encoding must be SBCS", "encoding");
-
             var magic = new byte[] { 0x4B, 0x47, 0x53, 0x21, 0x40, 0x23, 0x24, 0x25 };
 
             var passwordBytes = encoding.GetBytes(password.ToUpperInvariant().Substring(0, Math.Min(14, password.Length)));
-            Debug.Assert(passwordBytes.Length <= 14, "The password bytes must not be longer than 14 bytes.");
 
             var keys = new byte[21];
             var pass = new byte[14];
-            Array.Copy(passwordBytes, pass, passwordBytes.Length);
+            Array.Copy(passwordBytes, pass, Math.Min(passwordBytes.Length, 14));
 
             {
                 var engine = CipherUtilities.GetCipher("DES/ECB");
@@ -85,10 +76,58 @@ namespace RestSharp.Portable.TcpClient.ProxyAuthenticators
             return result;
         }
 
-        /// <summary>Modifies the request to ensure that the authentication requirements are met.</summary>
+        /// <summary>
+        /// Dies the authentication module supports pre-authentication?
+        /// </summary>
         /// <param name="client">Client executing this request</param>
         /// <param name="request">Request to authenticate</param>
-        public void Authenticate(IRestClient client, IRestRequest request)
+        /// <param name="credentials">The credentials to be used for the authentication</param>
+        /// <returns>
+        /// true when the authentication module supports pre-authentication
+        /// </returns>
+        public bool CanPreAuthenticate(IRestClient client, IRestRequest request, ICredentials credentials)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Determines if the authentication module can handle the challenge sent with the response.
+        /// </summary>
+        /// <param name="client">The REST client the response is assigned to</param>
+        /// <param name="request">The REST request the response is assigned to</param>
+        /// <param name="credentials">The credentials to be used for the authentication</param>
+        /// <param name="response">The response that returned the authentication challenge</param>
+        /// <returns>
+        /// true when the authenticator can handle the sent challenge
+        /// </returns>
+        public bool CanHandleChallenge(
+            IRestClient client,
+            IRestRequest request,
+            ICredentials credentials,
+            HttpResponseMessage response)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Modifies the request to ensure that the authentication requirements are met.
+        /// </summary>
+        /// <param name="client">Client executing this request</param>
+        /// <param name="request">Request to authenticate</param>
+        /// <param name="credentials">The credentials used for the authentication</param>
+        public void PreAuthenticate(IRestClient client, IRestRequest request, ICredentials credentials)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Will be called when the authentication failed
+        /// </summary>
+        /// <param name="client">Client executing this request</param>
+        /// <param name="request">Request to authenticate</param>
+        /// <param name="credentials">The credentials used for the authentication</param>
+        /// <param name="response">Response of the failed request</param>
+        public void HandleChallenge(IRestClient client, IRestRequest request, ICredentials credentials, HttpResponseMessage response)
         {
             throw new NotImplementedException();
         }
