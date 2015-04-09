@@ -1,23 +1,30 @@
 ﻿using System;
-using System.Net;
 using System.Net.Http;
 
+using RestSharp.Portable.Authenticators;
 using RestSharp.Portable.HttpClientImpl;
 
 namespace RestSharp.Portable.TcpClient
 {
     public class DefaultTcpClientFactory : DefaultHttpClientFactory
     {
+        private readonly AuthenticationChallengeHandler _defaultProxyAuthenticator = new AuthenticationChallengeHandler(AuthHeader.Proxy);
+
         private readonly INativeTcpClientFactory _tcpClientFactory;
 
         public DefaultTcpClientFactory(INativeTcpClientFactory tcpClientFactory)
         {
+            _defaultProxyAuthenticator.Register(HttpBasicAuthenticator.AuthenticationMethod, new HttpBasicAuthenticator(AuthHeader.Proxy), -1000);
+            _defaultProxyAuthenticator.Register(HttpDigestAuthenticator.AuthenticationMethod, new HttpDigestAuthenticator(AuthHeader.Proxy), 1000);
+
             _tcpClientFactory = tcpClientFactory;
         }
 
         public bool ResolveHost { get; set; }
 
         public bool AllowRedirect { get; set; }
+
+        public IAuthenticator ProxyAuthenticator { get; set; }
 
         protected override HttpMessageHandler CreateMessageHandler(IRestClient client, IRestRequest request)
         {
@@ -26,6 +33,7 @@ namespace RestSharp.Portable.TcpClient
                 ResolveHost = ResolveHost,
                 AllowRedirect = AllowRedirect,
                 Proxy = client.Proxy,
+                ProxyAuthenticator = ProxyAuthenticator ?? _defaultProxyAuthenticator,
             };
 
             var cookies = GetCookies(client, request);

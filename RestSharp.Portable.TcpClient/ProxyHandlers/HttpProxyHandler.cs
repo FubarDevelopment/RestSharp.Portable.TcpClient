@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,6 +9,8 @@ namespace RestSharp.Portable.TcpClient.ProxyHandlers
 {
     public class HttpProxyHandler : IProxyHandler
     {
+        private static readonly HttpMethod _httpConnectMethod = new HttpMethod("CONNECT");
+
         private readonly Uri _proxyUri;
 
         private readonly IWebProxy _proxy;
@@ -45,14 +48,21 @@ namespace RestSharp.Portable.TcpClient.ProxyHandlers
 
         public async Task<Stream> CreateSslStream(TcpClientMessageHandler messageHandler, Stream networkStream, EndPoint destination, CancellationToken cancellationToken)
         {
-            var proxyHeaders = new WebHeaderCollection
+            var requestMessage = new HttpRequestMessage(_httpConnectMethod, ProxyUri)
             {
-                { "Host", destination.Host },
+                Version = WellKnownHttpVersions.Version11
             };
+            requestMessage.Headers.Host = destination.Host;
 
             using (var writerStream = new NonDisposableStream(networkStream))
             {
-                var response = await ConnectToProxy(proxyHeaders, writerStream, destination, cancellationToken);
+                var response = await ConnectToProxy(messageHandler, requestMessage, writerStream, destination, cancellationToken);
+                if (!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.ProxyAuthenticationRequired)
+                {
+                    if (messageHandler.ProxyAuthenticator.CanPreAuthenticate(null, requestMessage, Proxy.Credentials))
+                        await messageHandler.ProxyAuthenticator.PreAuthenticate(null, requestMessage, Proxy.Credentials);
+                }
+
                 response.EnsureSuccessStatusCode();
             }
 
@@ -60,21 +70,22 @@ namespace RestSharp.Portable.TcpClient.ProxyHandlers
         }
 
         private async Task<TcpClientResponseMessage> ConnectToProxy(
-            WebHeaderCollection headers,
+            TcpClientMessageHandler messageHandler,
+            HttpRequestMessage requestMessage,
             NonDisposableStream networkStream,
             EndPoint destination,
             CancellationToken cancellationToken)
         {
             using (var writer = new StreamWriter(networkStream))
             {
-                var requestLine = string.Format("CONNECT {0} HTTP/1.1", destination);
+                var requestLine = string.Format("{0} {1} HTTP/{2}", requestMessage.Method, destination, requestMessage.Version);
                 await writer.WriteLineAsync(requestLine);
-                await writer.WriteHttpHeaderAsync(headers);
+                await writer.WriteHttpHeaderAsync(requestMessage.Headers);
                 await writer.WriteLineAsync();
                 await writer.FlushAsync();
             }
 
-            var response = new TcpClientResponseMessage(null, null, null, null);
+            var response = new TcpClientResponseMessage(requestMessage, requestMessage.RequestUri, messageHandler, null);
             await response.Parse(networkStream, cancellationToken, null);
             return response;
         }

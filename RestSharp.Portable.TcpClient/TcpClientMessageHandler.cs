@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using RestSharp.Portable.Authenticators;
 using RestSharp.Portable.TcpClient.Pooling;
 using RestSharp.Portable.TcpClient.ProxyHandlers;
 
@@ -44,6 +45,8 @@ namespace RestSharp.Portable.TcpClient
         public bool ResolveHost { get; set; }
 
         public IWebProxy Proxy { get; set; }
+
+        public IAuthenticator ProxyAuthenticator { get; set; }
 
         public abstract INativeTcpClientFactory NativeTcpClientFactory { get; }
 
