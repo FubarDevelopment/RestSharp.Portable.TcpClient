@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
@@ -11,7 +12,7 @@ using RestSharp.Portable.Authenticators;
 
 namespace RestSharp.Portable.TcpClient.Authenticators
 {
-    public class NtlmProxyAuthenticator : ISyncAuthenticator
+    public class NtlmProxyAuthenticator : IAuthenticator
     {
         private readonly AuthHeader _authHeader;
 
@@ -77,7 +78,7 @@ namespace RestSharp.Portable.TcpClient.Authenticators
         }
 
         /// <summary>
-        /// Dies the authentication module supports pre-authentication?
+        /// Does the authentication module supports pre-authentication for the given <see cref="T:RestSharp.Portable.IRestRequest"/>?
         /// </summary>
         /// <param name="client">Client executing this request</param>
         /// <param name="request">Request to authenticate</param>
@@ -91,18 +92,32 @@ namespace RestSharp.Portable.TcpClient.Authenticators
         }
 
         /// <summary>
+        /// Does the authentication module supports pre-authentication for the given <see cref="T:System.Net.Http.HttpRequestMessage"/>?
+        /// </summary>
+        /// <param name="client">Client executing this request</param>
+        /// <param name="request">Request to authenticate</param>
+        /// <param name="credentials">The credentials to be used for the authentication</param>
+        /// <returns>
+        /// true when the authentication module supports pre-authentication
+        /// </returns>
+        public bool CanPreAuthenticate(HttpClient client, HttpRequestMessage request, ICredentials credentials)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Determines if the authentication module can handle the challenge sent with the response.
         /// </summary>
-        /// <param name="client">The REST client the response is assigned to</param>
-        /// <param name="request">The REST request the response is assigned to</param>
+        /// <param name="client">The HTTP client the response is assigned to</param>
+        /// <param name="request">The HTTP request the response is assigned to</param>
         /// <param name="credentials">The credentials to be used for the authentication</param>
         /// <param name="response">The response that returned the authentication challenge</param>
         /// <returns>
         /// true when the authenticator can handle the sent challenge
         /// </returns>
         public bool CanHandleChallenge(
-            IRestClient client,
-            IRestRequest request,
+            HttpClient client,
+            HttpRequestMessage request,
             ICredentials credentials,
             HttpResponseMessage response)
         {
@@ -115,7 +130,24 @@ namespace RestSharp.Portable.TcpClient.Authenticators
         /// <param name="client">Client executing this request</param>
         /// <param name="request">Request to authenticate</param>
         /// <param name="credentials">The credentials used for the authentication</param>
-        public void PreAuthenticate(IRestClient client, IRestRequest request, ICredentials credentials)
+        /// <returns>
+        /// The task the authentication is performed on
+        /// </returns>
+        public Task PreAuthenticate(IRestClient client, IRestRequest request, ICredentials credentials)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Modifies the request to ensure that the authentication requirements are met.
+        /// </summary>
+        /// <param name="client">Client executing this request</param>
+        /// <param name="request">Request to authenticate</param>
+        /// <param name="credentials">The credentials used for the authentication</param>
+        /// <returns>
+        /// The task the authentication is performed on
+        /// </returns>
+        public Task PreAuthenticate(HttpClient client, HttpRequestMessage request, ICredentials credentials)
         {
             throw new NotImplementedException();
         }
@@ -127,7 +159,14 @@ namespace RestSharp.Portable.TcpClient.Authenticators
         /// <param name="request">Request to authenticate</param>
         /// <param name="credentials">The credentials used for the authentication</param>
         /// <param name="response">Response of the failed request</param>
-        public void HandleChallenge(IRestClient client, IRestRequest request, ICredentials credentials, HttpResponseMessage response)
+        /// <returns>
+        /// Task where the handler for a failed authentication gets executed
+        /// </returns>
+        public Task HandleChallenge(
+            HttpClient client,
+            HttpRequestMessage request,
+            ICredentials credentials,
+            HttpResponseMessage response)
         {
             throw new NotImplementedException();
         }

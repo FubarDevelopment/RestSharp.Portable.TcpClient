@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AddressCompatibility.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AuthenticationChallengeHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DefaultTcpClientFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EndPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EndPointComparer.cs" />
